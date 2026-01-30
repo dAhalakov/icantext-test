@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>iCanText HTML Test</title>
+</head>
+<body>
+
+<h1>iCanText HTML test</h1>
+<div id="status">Connecting...</div>
+
+<script src="https://icantext.com/sdk/app-bridge.js"></script>
+<script>
+  const status = document.getElementById("status");
+
+  const app = new AppBridge();
+
+  app.ready().then(() => {
+    status.innerText = "Connected";
+
+    console.log("Context:", app.context);
+    console.log("Identity:", app.identity);
+
+    app.on("message", (msg) => {
+      console.log("Message received:", msg);
+    });
+
+    app.sendMessage({
+      channel: app.context.channelId || "general",
+      content: "Hello from basic HTML"
+    });
+  }).catch(err => {
+    status.innerText = "Not connected";
+    console.error(err);
+  });
+</script>
+
+</body>
+</html>
