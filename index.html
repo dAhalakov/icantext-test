@@ -13,7 +13,7 @@
 <script>
   const status = document.getElementById("status");
 
-  const app = new AppBridge();
+  const app = new ICTBridgeSDK('my_collab_app');
 
   app.ready().then(() => {
     status.innerText = "Connected";
@@ -27,7 +27,7 @@
 
     app.sendMessage({
       channel: app.context.channelId || "general",
-      content: "Hello from basic HTML"
+      content: "Hello World"
     });
   }).catch(err => {
     status.innerText = "Not connected";
