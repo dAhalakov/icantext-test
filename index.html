@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>iCanText HTML Test</title>
+</head>
+<body>
+
+<h1>iCanText HTML test</h1>
+<div id="status">Connecting...</div>
+
+<script src="https://icantext.com/ICTBridgeSDK.js"></script>
+<script>
+const sdk = new ICTBridgeSDK('my_collab_app');
+
+async function startApp() {
+    const connection = await sdk.init();
+    
+    if (connection.status === 'READY') {
+        console.log(`Connected as: ${connection.localPseudonym}`);
+
+        // Listen for incoming notes
+        sdk.onData((from, payload) => {
+            alert(`Note from ${from}: ${payload.text}`);
+        });
+
+        // Send a note to all known peers
+        const peers = await sdk.getPeers();
+        const peerIds = peers.map(p => p.id);
+        sdk.sendData(peerIds, { text: 'Hello decentralized world!' });
+    }
+}
+</script>
+
+</body>
+</html>
