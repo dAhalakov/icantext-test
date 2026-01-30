@@ -29,6 +29,9 @@
 	        const peerIds = peers.map(p => p.id);
 	        sdk.sendData(peerIds, { text: 'Hello decentralized world!' });
 	    }
+	    else{
+	    	console.log(connection.status);
+	    }
 	}
 </script>
 
