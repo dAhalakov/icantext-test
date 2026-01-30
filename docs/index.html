@@ -11,28 +11,25 @@
 
 <script src="https://icantext.com/ICTBridgeSDK.js"></script>
 <script>
-  const status = document.getElementById("status");
+	const sdk = new ICTBridgeSDK('my_collab_app');
 
-  const app = new ICTBridgeSDK('my_collab_app');
+	async function startApp() {
+	    const connection = await sdk.init();
+	    
+	    if (connection.status === 'READY') {
+	        console.log(`Connected as: ${connection.localPseudonym}`);
 
-  app.ready().then(() => {
-    status.innerText = "Connected";
+	        // Listen for incoming notes
+	        sdk.onData((from, payload) => {
+	            alert(`Note from ${from}: ${payload.text}`);
+	        });
 
-    console.log("Context:", app.context);
-    console.log("Identity:", app.identity);
-
-    app.on("message", (msg) => {
-      console.log("Message received:", msg);
-    });
-
-    app.sendMessage({
-      channel: app.context.channelId || "general",
-      content: "Hello World"
-    });
-  }).catch(err => {
-    status.innerText = "Not connected";
-    console.error(err);
-  });
+	        // Send a note to all known peers
+	        const peers = await sdk.getPeers();
+	        const peerIds = peers.map(p => p.id);
+	        sdk.sendData(peerIds, { text: 'Hello decentralized world!' });
+	    }
+	}
 </script>
 
 </body>
