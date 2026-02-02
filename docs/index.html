@@ -1,40 +1,144 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>iCanText HTML Test</title>
-</head>
-<body>
+	<head>
+	  <meta charset="UTF-8">
+	  <title>iCanText HTML Test</title>
+	  <link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div id="main-body" class="main-body">
+			<div id="app-body" class="app-body">
+				<h2 class="app-title">iCanText - Votes</h2>
+				<span id="my-id" class="my-id">my-id</span>
+				<div id="configuration-votes" class="card">
+					<div id="container-content">
+						<h3>Configuration votes</h3>
+						<h4>Ask a question</h4>
+						<input type="text" name="question" placeholder="Type your question...">
+						<div id="vars-response">
+		  					<h4>Variants of response</h4>
 
-<h1>iCanText HTML test</h1>
-<div id="status">Connecting...</div>
+		  <div class="response-item">
+		    <input type="text" name="response1" placeholder="Variant 1">
+		  </div>
+		</div>
 
-<script src="https://icantext.com/ICTBridgeSDK.js"></script>
-<script>
-	const sdk = new ICTBridgeSDK('my_collab_app');
+		<button id="add-new-response">Add new variant of response</button>
+					</div>
+					<h4>Type of choise</h4>
+					<div id="container-configuration">
+						<label><input type="radio" name="choise" value="single">Single choise</label>
+						<label><input type="radio" name="choise" value="multiple">Multiple choise</label>
+					</div>
+					<div class="create-vote-wrapper">
+		    			<button id="create-vote-btn">Create vote</button>
+		  			</div>
+				</div>
 
-	async function startApp() {
-	    const connection = await sdk.init();
-	    
-	    if (connection.status === 'READY') {
-	        console.log(`Connected as: ${connection.localPseudonym}`);
 
-	        // Listen for incoming notes
-	        sdk.onData((from, payload) => {
-	            alert(`Note from ${from}: ${payload.text}`);
-	        });
+				<div id="vote-container" class="card vote-container">
 
-	        // Send a note to all known peers
-	        const peers = await sdk.getPeers();
-	        const peerIds = peers.map(p => p.id);
-	        sdk.sendData(peerIds, { text: 'Hello decentralized world!' });
-	    }
-	    else{
-	    	console.log(connection.status);
-	    }
-	}
-	startApp();
-</script>
+					<table>
+						<tr>
+							<th>.question.</th>
+							<th></th>
+						</tr>
+						<tr>
+							<td>.variant 1.</td>
+							<td><input type="radio" id="var1" name="var1" value="var1"/></td>
+						</tr>
+						<tr>
+							<td>.variant 2.</td>
+							<td><input type="radio" id="var2" name="var2" value="var2"/></td>
+						</tr>
+					</table>
+					.block of vote.
+				</div>
+			</div>
+			<div id="error-log" class="error-log">.error.</div>
+		</div>
 
-</body>
+		
+		<script src="https://icantext.com/ICTBridgeSDK.js"></script>
+		<script>
+		  	const addBtn = document.getElementById('add-new-response');
+		  	const varsContainer = document.getElementById('vars-response');
+
+		  	let responseCount = 1;
+
+		  	function hasEmptyResponse() {
+			    const inputs = varsContainer.querySelectorAll('input[type="text"]');
+			    for (const input of inputs) {
+			      	if (input.value.trim() === '') {
+			        	return true;
+			      	}
+			    }
+		    	return false;
+		  	}
+
+		  	function createResponseInput() {
+		    	if (hasEmptyResponse()) {
+		      		alert('Please fill in all existing variants before adding a new one.');
+		      		return;
+		    	}
+
+		    responseCount++;
+
+		    const wrapper = document.createElement('div');
+		    wrapper.className = 'response-item';
+
+		    const input = document.createElement('input');
+		    input.type = 'text';
+		    input.name = `response${responseCount}`;
+		    input.placeholder = `Variant ${responseCount}`;
+
+		    const removeBtn = document.createElement('button');
+		    removeBtn.type = 'button';
+		    removeBtn.className = 'remove-response';
+		    removeBtn.textContent = 'X';
+
+		    removeBtn.addEventListener('click', () => {
+		      wrapper.remove();
+		    });
+
+		    wrapper.appendChild(input);
+		    wrapper.appendChild(removeBtn);
+		    varsContainer.appendChild(wrapper);
+		  	}
+
+		  	addBtn.addEventListener('click', createResponseInput);
+
+		  	const params = new URLSearchParams(window.location.search);
+
+		  	if (params.has('voteId')) {
+			    document.getElementById('configuration-votes').style.display = 'none';
+			    document.getElementById('vote-container').style.display = 'block';
+		  	} else {
+			    document.getElementById('vote-container').style.display = 'none';
+			    document.getElementById('configuration-votes').style.display = 'block';
+		  	}
+
+		  	const sdk = new ICTBridgeSDK('my_collab_app');
+
+		  	async function startApp() {
+			    const connection = await sdk.init();
+
+			    if (connection.status === 'READY') {
+			      	console.log(`Connected as: ${connection.localPseudonym}`);
+
+			      	sdk.onData((from, payload) => {
+			        alert(`Note from ${from}: ${payload.text}`);
+			      });
+
+			    	const peers = await sdk.getPeers();
+			    	const peerIds = peers.map(p => p.id);
+			     	sdk.sendData(peerIds, { text: 'Hello decentralized world!' });
+			    } else {
+			      	console.log(connection.status);
+			    }
+		  	}
+
+		  	startApp();
+		</script>
+	</body>
 </html>
