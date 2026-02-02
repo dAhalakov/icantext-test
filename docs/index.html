@@ -31,8 +31,9 @@
 						<label><input type="radio" name="choise" value="multiple">Multiple choise</label>
 					</div>
 					<div class="create-vote-wrapper">
-		    			<button id="create-vote-btn">Create vote</button>
-		  			</div>
+					  	<button id="cancel-vote-btn" class="btn-secondary">Cancel</button>
+					  	<button id="create-vote-btn" class="btn-primary">Create vote</button>
+					</div>
 				</div>
 
 
@@ -61,61 +62,77 @@
 		
 		<script src="https://icantext.com/ICTBridgeSDK.js"></script>
 		<script>
-		  	const addBtn = document.getElementById('add-new-response');
-		  	const varsContainer = document.getElementById('vars-response');
-
-		  	let responseCount = 1;
-
-		  	function hasEmptyResponse() {
-			    const inputs = varsContainer.querySelectorAll('input[type="text"]');
-			    for (const input of inputs) {
-			      	if (input.value.trim() === '') {
-			        	return true;
-			      	}
-			    }
-		    	return false;
+		  	const params = new URLSearchParams(window.location.hash);
+		  	if (params.has("#")){
+		  		params = params.substring(1);
 		  	}
-
-		  	function createResponseInput() {
-		    	if (hasEmptyResponse()) {
-		      		alert('Please fill in all existing variants before adding a new one.');
-		      		return;
-		    	}
-
-		    responseCount++;
-
-		    const wrapper = document.createElement('div');
-		    wrapper.className = 'response-item';
-
-		    const input = document.createElement('input');
-		    input.type = 'text';
-		    input.name = `response${responseCount}`;
-		    input.placeholder = `Variant ${responseCount}`;
-
-		    const removeBtn = document.createElement('button');
-		    removeBtn.type = 'button';
-		    removeBtn.className = 'remove-response';
-		    removeBtn.textContent = 'X';
-
-		    removeBtn.addEventListener('click', () => {
-		      wrapper.remove();
-		    });
-
-		    wrapper.appendChild(input);
-		    wrapper.appendChild(removeBtn);
-		    varsContainer.appendChild(wrapper);
-		  	}
-
-		  	addBtn.addEventListener('click', createResponseInput);
-
-		  	const params = new URLSearchParams(window.location.search);
-
-		  	if (params.has('voteId')) {
+		  	if (params!="") {
 			    document.getElementById('configuration-votes').style.display = 'none';
 			    document.getElementById('vote-container').style.display = 'block';
 		  	} else {
 			    document.getElementById('vote-container').style.display = 'none';
 			    document.getElementById('configuration-votes').style.display = 'block';
+
+			    const addBtn = document.getElementById('add-new-response');
+			  	const varsContainer = document.getElementById('vars-response');
+
+			  	let responseCount = 1;
+
+			  	function hasEmptyResponse() {
+				    const inputs = varsContainer.querySelectorAll('input[type="text"]');
+				    for (const input of inputs) {
+				      	if (input.value.trim() === '') {
+				        	return true;
+				      	}
+				    }
+			    	return false;
+			  	}
+
+			  	function createResponseInput() {
+			    	if (hasEmptyResponse()) {
+			      		alert('Please fill in all existing variants before adding a new one.');
+			      		return;
+			    	}
+
+			    responseCount++;
+
+			    const wrapper = document.createElement('div');
+			    wrapper.className = 'response-item';
+
+			    const input = document.createElement('input');
+			    input.type = 'text';
+			    input.name = `response${responseCount}`;
+			    input.placeholder = `Variant ${responseCount}`;
+
+			    const removeBtn = document.createElement('button');
+			    removeBtn.type = 'button';
+			    removeBtn.className = 'remove-response';
+			    removeBtn.textContent = 'X';
+
+			    removeBtn.addEventListener('click', () => {
+			      wrapper.remove();
+			    });
+
+			    wrapper.appendChild(input);
+			    wrapper.appendChild(removeBtn);
+			    varsContainer.appendChild(wrapper);
+			  	}
+
+			  	addBtn.addEventListener('click', createResponseInput);
+
+			  	const createVoteBtn = document.getElementById('create-vote-btn');
+				const cancelVoteBtn = document.getElementById('cancel-vote-btn');
+
+				function onCreateVote() {
+					
+				}
+
+				function onCancelVote() {
+					
+				}
+
+				createVoteBtn.addEventListener('click', onCreateVote);
+				cancelVoteBtn.addEventListener('click', onCancelVote);
 		  	}
 
 		  	const sdk = new ICTBridgeSDK('my_collab_app');

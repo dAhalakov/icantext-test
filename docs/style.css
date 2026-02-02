@@ -137,24 +137,40 @@ input[type="radio"] {
 }
 
 .create-vote-wrapper {
-  	margin-top: 25px;
-  	padding-top: 15px;
-  	border-top: 1px solid #3f3f55;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #3f3f55;
+  display: flex;
+  gap: 12px;
 }
 
-#create-vote-btn {
-  	width: 100%;
-  	padding: 14px;
-  	font-size: 1em;
-  	font-weight: 600;
-  	border-radius: 14px;
-  	background: linear-gradient(135deg, #4facfe, #00f2fe);
-  	color: #0b1020;
+.btn-primary {
+  flex: 1;
+  padding: 14px;
+  font-size: 1em;
+  font-weight: 600;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: #0b1020;
 }
 
-#create-vote-btn:hover {
-  	transform: translateY(-2px);
-  	box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+.btn-secondary {
+  flex: 1;
+  padding: 14px;
+  font-size: 1em;
+  font-weight: 500;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: #1e1e28;
+  color: #cfd2ff;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-1px);
 }
 
 .response-item {
