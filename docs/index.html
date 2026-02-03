@@ -62,10 +62,28 @@
 		
 		<script src="https://icantext.com/ICTBridgeSDK.js"></script>
 		<script>
+			// version with context
+			const state = await sdk.getAppContext();
+			console.log("Context: ", state.question);
+			let verifAppType;
+			if (state!=""){
+				verifAppType = "vote";
+			}
+			else{
+				verifAppType = "conf";
+			}
+			// version with hash
 		  	const params = new URLSearchParams(window.location.hash);
 		  	if (params.has("#")){
 		  		params = params.substring(1);
 		  	}
+		  	if (params!="") {
+		  		verifAppType = "vote";
+		  	}
+			else{
+				verifAppType = "conf";
+			}
+
 		  	if (params!="") {
 			    document.getElementById('configuration-votes').style.display = 'none';
 			    document.getElementById('vote-container').style.display = 'block';
@@ -124,11 +142,11 @@
 				const cancelVoteBtn = document.getElementById('cancel-vote-btn');
 
 				function onCreateVote() {
-					
+
 				}
 
 				function onCancelVote() {
-					
+
 				}
 
 				createVoteBtn.addEventListener('click', onCreateVote);
