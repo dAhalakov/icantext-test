@@ -1,0 +1,6 @@
+{
+	"question": "Pizza ou Tacos",
+	"choiceType": "single",
+	"variants": ["Pizza", "Tacos"],
+	"votes": [3, 5]
+}

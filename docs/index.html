@@ -62,16 +62,40 @@
 		
 		<script src="https://icantext.com/ICTBridgeSDK.js"></script>
 		<script>
+			const sdk = new ICTBridgeSDK('my_collab_app');
+
+		  	async function startApp() {
+			    const connection = await sdk.init();
+
+			    if (connection.status === 'READY') {
+			      	console.log('Connected as: ${connection.localPseudonym}');
+			      	document.getElementById("my-id").textContent = connection.localPseudonym;
+			    } else {
+			      	console.log(connection.status);
+			    }
+		  	}
+
+		  	startApp();
+		  	let verifAppType;
+
+			//version with display mode
+			const mode = sdk.getDisplayMode();
+			if (mode === 'MESSAGE') {
+			    verifAppType = "vote";
+			} else {
+			    verifAppType = "conf";
+			}
+
 			// version with context
 			const state = await sdk.getAppContext();
 			console.log("Context: ", state.question);
-			let verifAppType;
 			if (state!=""){
 				verifAppType = "vote";
 			}
 			else{
 				verifAppType = "conf";
 			}
+
 			// version with hash
 		  	const params = new URLSearchParams(window.location.hash);
 		  	if (params.has("#")){
@@ -84,10 +108,11 @@
 				verifAppType = "conf";
 			}
 
-		  	if (params!="") {
+			// verification type of app and show the block(s) needed
+		  	if (verifAppType=="vote") {
 			    document.getElementById('configuration-votes').style.display = 'none';
 			    document.getElementById('vote-container').style.display = 'block';
-		  	} else {
+		  	} else if (verifAppType=="conf") {
 			    document.getElementById('vote-container').style.display = 'none';
 			    document.getElementById('configuration-votes').style.display = 'block';
 
@@ -141,39 +166,55 @@
 			  	const createVoteBtn = document.getElementById('create-vote-btn');
 				const cancelVoteBtn = document.getElementById('cancel-vote-btn');
 
-				function onCreateVote() {
+				function collectDataVote() {
+					const jsonFile = {};
 
+				  	// collect question
+				  	const questionInput = document.querySelector('input[name="question"]');
+				  	jsonFile.question = questionInput.value.trim();
+
+				  	// collect type of choise
+				  	const choiceInput = document.querySelector('input[name="choise"]:checked');
+				  	jsonFile.choiceType = choiceInput.value;
+
+				  	// collect variants of response
+				  	const responses = [];
+				  	const responseInputs = document.querySelectorAll('#vars-response input[type="text"]');
+
+				  	for (let i = 0; i < responseInputs.length; i++) {
+				    	const value = responseInputs[i].value.trim();
+				    	if (value !== '') {
+				     	 	responses.push(value);
+				    	}
+				  	}
+
+				  	jsonFile.responses = responses;
+
+				  	return jsonFile;
+				}
+				
+				async function onCreateVote() {
+				  	const votesData = collectDataVote();
+
+				  	const id = await sdk.postMessage({
+				    	text: "Hello! Vote here:"
+				  	});
+
+				  	sdk.postAppContent("https://dahalakov.github.io/icantext-test/",
+				    	{
+				      	voteId: id,
+				      	data: votesData
+				    	}
+				  	);
 				}
 
 				function onCancelVote() {
-
+					sdk.closeApp();
 				}
 
 				createVoteBtn.addEventListener('click', onCreateVote);
 				cancelVoteBtn.addEventListener('click', onCancelVote);
 		  	}
-
-		  	const sdk = new ICTBridgeSDK('my_collab_app');
-
-		  	async function startApp() {
-			    const connection = await sdk.init();
-
-			    if (connection.status === 'READY') {
-			      	console.log(`Connected as: ${connection.localPseudonym}`);
-
-			      	sdk.onData((from, payload) => {
-			        alert(`Note from ${from}: ${payload.text}`);
-			      });
-
-			    	const peers = await sdk.getPeers();
-			    	const peerIds = peers.map(p => p.id);
-			     	sdk.sendData(peerIds, { text: 'Hello decentralized world!' });
-			    } else {
-			      	console.log(connection.status);
-			    }
-		  	}
-
-		  	startApp();
 		</script>
 	</body>
 </html>
