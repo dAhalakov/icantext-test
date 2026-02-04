@@ -222,7 +222,7 @@
 		        const messageId = await sdk.postMessage({
 		            text: 'New vote created'
 		        });
-
+		        console.log(voteData);
 		        // Attach app with initial context
 		        await sdk.postAppContent(
 		            'https://dahalakov.github.io/icantext-test/',
