@@ -27,7 +27,7 @@
 					</div>
 					<h4>Type of choise</h4>
 					<div id="container-configuration">
-						<label><input type="radio" name="choise" value="single">Single choise</label>
+						<label><input type="radio" name="choise" value="single" checked="true">Single choise</label>
 						<label><input type="radio" name="choise" value="multiple">Multiple choise</label>
 					</div>
 					<div class="create-vote-wrapper">
@@ -62,159 +62,183 @@
 		
 		<script src="https://icantext.com/ICTBridgeSDK.js"></script>
 		<script>
-			const sdk = new ICTBridgeSDK('my_collab_app');
+		    
+		    // initialize iCanText Bridge SDK
+		    const sdk = new ICTBridgeSDK('votes_app');
 
-		  	async function startApp() {
-			    const connection = await sdk.init();
+		    // start app
+		    async function startApp() {
+		        const connection = await sdk.init();
 
-			    if (connection.status === 'READY') {
-			      	console.log('Connected as: ${connection.localPseudonym}');
-			      	document.getElementById("my-id").textContent = connection.localPseudonym;
-			    } else {
-			      	console.log(connection.status);
-			    }
-		  	}
+		        // stop execution if app is not launched from iCanText
+		        if (connection.status !== 'READY') {
+		            console.warn('Running in ' + connection.status + ' mode');
 
-		  	startApp();
-		  	let verifAppType;
+			        // force configuration UI for local testing
+			        initConfigMode();
+			        return;
+		        }
 
-			//version with display mode
-			const mode = sdk.getDisplayMode();
-			if (mode === 'MESSAGE') {
-			    verifAppType = "vote";
-			} else {
-			    verifAppType = "conf";
-			}
+		        // display current user pseudonym
+		        document.getElementById("my-id").textContent = connection.localPseudonym;
 
-			// version with context
-			const state = await sdk.getAppContext();
-			console.log("Context: ", state.question);
-			if (state!=""){
-				verifAppType = "vote";
-			}
-			else{
-				verifAppType = "conf";
-			}
+		        // determine how the app is rendered
+		        const mode = sdk.getDisplayMode();
+		        console.log(mode);
 
-			// version with hash
-		  	const params = new URLSearchParams(window.location.hash);
-		  	if (params.has("#")){
-		  		params = params.substring(1);
-		  	}
-		  	if (params!="") {
-		  		verifAppType = "vote";
-		  	}
-			else{
-				verifAppType = "conf";
-			}
+		        if (mode === 'MESSAGE') {
+		            initVoteMode();
+		        } else {
+		            initConfigMode();
+		        }
+		    }
 
-			// verification type of app and show the block(s) needed
-		  	if (verifAppType=="vote") {
-			    document.getElementById('configuration-votes').style.display = 'none';
-			    document.getElementById('vote-container').style.display = 'block';
-		  	} else if (verifAppType=="conf") {
-			    document.getElementById('vote-container').style.display = 'none';
-			    document.getElementById('configuration-votes').style.display = 'block';
+		    startApp();
 
-			    const addBtn = document.getElementById('add-new-response');
-			  	const varsContainer = document.getElementById('vars-response');
 
-			  	let responseCount = 1;
+		    // vote mode
+		    async function initVoteMode() {
+		        // hide block of configuration vote and show block of vote
+		        document.getElementById('configuration-votes').style.display = 'none';
+		        document.getElementById('vote-container').style.display = 'block';
 
-			  	function hasEmptyResponse() {
-				    const inputs = varsContainer.querySelectorAll('input[type="text"]');
-				    for (const input of inputs) {
-				      	if (input.value.trim() === '') {
-				        	return true;
-				      	}
-				    }
-			    	return false;
-			  	}
+		        // send in log the context of this vote
+		        const state = await sdk.getAppContext();
+		        console.log('Vote context:', state);
 
-			  	function createResponseInput() {
-			    	if (hasEmptyResponse()) {
-			      		alert('Please fill in all existing variants before adding a new one.');
-			      		return;
-			    	}
+		        // TODO
+		    }
 
-			    responseCount++;
+		   // config mode
+		    function initConfigMode() {
+		        document.getElementById('vote-container').style.display = 'none';
+		        document.getElementById('configuration-votes').style.display = 'block';
 
-			    const wrapper = document.createElement('div');
-			    wrapper.className = 'response-item';
+		        setupResponses();
+		        setupButtons();
+		    }
 
-			    const input = document.createElement('input');
-			    input.type = 'text';
-			    input.name = `response${responseCount}`;
-			    input.placeholder = `Variant ${responseCount}`;
+		    
+		    // responses configuration
+		    function setupResponses() {
+		        const addBtn = document.getElementById('add-new-response');
+		        const varsContainer = document.getElementById('vars-response');
 
-			    const removeBtn = document.createElement('button');
-			    removeBtn.type = 'button';
-			    removeBtn.className = 'remove-response';
-			    removeBtn.textContent = 'X';
+		        let responseCount = 1;
 
-			    removeBtn.addEventListener('click', () => {
-			      wrapper.remove();
-			    });
+		        // check if at least one existing input is empty
+		        function hasEmptyResponse() {
+		            const inputs = varsContainer.querySelectorAll('input[type="text"]');
+		            for (let i = 0; i < inputs.length; i++) {
+		                if (inputs[i].value.trim() === '') {
+		                    return true;
+		                }
+		            }
+		            return false;
+		        }
 
-			    wrapper.appendChild(input);
-			    wrapper.appendChild(removeBtn);
-			    varsContainer.appendChild(wrapper);
-			  	}
+		        // create new response input with remove button
+		        function createResponseInput() {
+		            if (hasEmptyResponse()) {
+		                alert('Please fill in all existing variants before adding a new one.');
+		                return;
+		            }
 
-			  	addBtn.addEventListener('click', createResponseInput);
+		            responseCount++;
 
-			  	const createVoteBtn = document.getElementById('create-vote-btn');
-				const cancelVoteBtn = document.getElementById('cancel-vote-btn');
+		            const wrapper = document.createElement('div');
+		            wrapper.className = 'response-item';
 
-				function collectDataVote() {
-					const jsonFile = {};
+		            const input = document.createElement('input');
+		            input.type = 'text';
+		            input.name = 'response' + responseCount;
+		            input.placeholder = 'Variant ' + responseCount;
 
-				  	// collect question
-				  	const questionInput = document.querySelector('input[name="question"]');
-				  	jsonFile.question = questionInput.value.trim();
+		            const removeBtn = document.createElement('button');
+		            removeBtn.type = 'button';
+		            removeBtn.className = 'remove-response';
+		            removeBtn.textContent = 'X';
 
-				  	// collect type of choise
-				  	const choiceInput = document.querySelector('input[name="choise"]:checked');
-				  	jsonFile.choiceType = choiceInput.value;
+		            // remove variant on click
+		            removeBtn.addEventListener('click', function () {
+		                wrapper.remove();
+		            });
 
-				  	// collect variants of response
-				  	const responses = [];
-				  	const responseInputs = document.querySelectorAll('#vars-response input[type="text"]');
+		            wrapper.appendChild(input);
+		            wrapper.appendChild(removeBtn);
+		            varsContainer.appendChild(wrapper);
+		        }
 
-				  	for (let i = 0; i < responseInputs.length; i++) {
-				    	const value = responseInputs[i].value.trim();
-				    	if (value !== '') {
-				     	 	responses.push(value);
-				    	}
-				  	}
+		        addBtn.addEventListener('click', createResponseInput);
+		    }
 
-				  	jsonFile.responses = responses;
+		    // collect data of configuration
+		    function collectDataVote() {
+		        const data = {};
 
-				  	return jsonFile;
-				}
-				
-				async function onCreateVote() {
-				  	const votesData = collectDataVote();
+		        // collect question
+		        const questionInput = document.querySelector('input[name="question"]');
+		        data.question = questionInput.value.trim();
 
-				  	const id = await sdk.postMessage({
-				    	text: "Hello! Vote here:"
-				  	});
+		        // collect choice type
+		        const choiceInput = document.querySelector('input[name="choise"]:checked');
+		        data.choiceType = choiceInput ? choiceInput.value : 'single';
 
-				  	sdk.postAppContent("https://dahalakov.github.io/icantext-test/",
-				    	{
-				      	voteId: id,
-				      	data: votesData
-				    	}
-				  	);
-				}
+		        // collect response variants
+		        const responses = [];
+		        const responseInputs = document.querySelectorAll('#vars-response input[type="text"]');
 
-				function onCancelVote() {
-					sdk.closeApp();
-				}
+		        for (let i = 0; i < responseInputs.length; i++) {
+		            const value = responseInputs[i].value.trim();
+		            if (value !== '') {
+		                responses.push(value);
+		            }
+		        }
 
-				createVoteBtn.addEventListener('click', onCreateVote);
-				cancelVoteBtn.addEventListener('click', onCancelVote);
-		  	}
+		        data.responses = responses;
+
+		        return data;
+		    }
+
+		    // handle buttons Create and Cancel
+		    function setupButtons() {
+		        const createVoteBtn = document.getElementById('create-vote-btn');
+		        const cancelVoteBtn = document.getElementById('cancel-vote-btn');
+
+		        createVoteBtn.addEventListener('click', onCreateVote);
+		        cancelVoteBtn.addEventListener('click', onCancelVote);
+		    }
+
+		    /*
+		        Create vote:
+		        - Collect data
+		        - Post a message to channel
+		        - Attach interactive app content
+		    */
+		    async function onCreateVote() {
+		        const voteData = collectDataVote();
+
+		        // send message in channel
+		        const messageId = await sdk.postMessage({
+		            text: 'New vote created'
+		        });
+
+		        // Attach app with initial context
+		        await sdk.postAppContent(
+		            'https://dahalakov.github.io/icantext-test/',
+		            {
+		                messageId: messageId,
+		                vote: voteData
+		            }
+		        );
+		        sdk.closeApp();
+		    }
+
+		    // cancel vote creation and close app
+		    function onCancelVote() {
+		        sdk.closeApp();
+		    }
 		</script>
+
 	</body>
 </html>
