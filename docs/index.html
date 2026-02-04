@@ -218,12 +218,11 @@
 		    async function onCreateVote() {
 		        const voteData = collectDataVote();
 
+		        let message = "New vote created: \n" + "Question: " + voteData.question;
 		        // send message in channel
 		        const messageId = await sdk.postMessage({
-		            text: 'New vote created'
+		            text: message
 		        });
-
-		        alert(voteData);
 		        
 		        // Attach app with initial context
 		        await sdk.postAppContent(
