@@ -41,19 +41,22 @@
 
 					<table>
 						<tr>
-							<th>.question.</th>
+							<th>There's your question ?</th>
 							<th></th>
 						</tr>
 						<tr>
-							<td>.variant 1.</td>
-							<td><input type="radio" id="var1" name="var1" value="var1"/></td>
+							<td>Variant 1</td>
+							<td><input type="radio" id="var1" name="variants" value="var1"/></td>
 						</tr>
 						<tr>
-							<td>.variant 2.</td>
-							<td><input type="radio" id="var2" name="var2" value="var2"/></td>
+							<td>Variant 2</td>
+							<td><input type="radio" id="var2" name="variants" value="var2"/></td>
 						</tr>
 					</table>
-					.block of vote.
+					<div class="vote-wrapper">
+						  	<button id="cancel-vote-btn" class="btn-secondary">Cancel</button>
+						  	<button id="send-vote-btn" class="btn-primary">Send</button>
+						</div>
 				</div>
 			</div>
 			<div id="error-log" class="error-log">.error.</div>
@@ -75,7 +78,7 @@
 		            console.warn('Running in ' + connection.status + ' mode');
 
 			        // force configuration UI for local testing
-			        initConfigMode();
+			        initVoteMode();
 			        return;
 		        }
 
@@ -106,7 +109,7 @@
 		        const state = await sdk.getAppContext();
 		        console.log('Vote context:', state);
 
-		        // TODO
+
 		    }
 
 		   // config mode

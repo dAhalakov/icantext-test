@@ -202,3 +202,11 @@ input[type="radio"] {
   	background: #3a3a4d;
   	transform: scale(1.05);
 }
+
+.vote-wrapper {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #3f3f55;
+  display: flex;
+  gap: 12px;
+}
