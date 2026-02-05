@@ -78,8 +78,8 @@
 		            console.warn('Running in ' + connection.status + ' mode');
 
 			        // force configuration UI for local testing or show info
-			        // initVoteMode();
-			        initInfoMode();
+			        initVoteMode();
+			        // initInfoMode();
 			        return;
 		        }
 
@@ -115,11 +115,11 @@
 						"question": "Pizza ou Tacos",
 						"choiceType": "single",
 						"variants": ["Pizza", "Tacos"],
-						"votes": [3, 5]
+						"votes": [5, 3]
 					}
 				}
 				*/
-			    console.log('Vote context vote:', context.vote.question);
+			    console.log('Vote context vote:', context);
 
 			    if (!context || !context.vote.question) {
 			        console.warn('Empty vote context');
@@ -163,7 +163,7 @@
 			    console.log("Data: " + data.vote.votes)
 			    // count total votes
 			    let totalVotes = 0;
-			    if (data.vote.votes!=null){
+			    if (data.vote.votes){
 			    	for (let i = 0; i < data.vote.votes.length; i++) {
 			        	totalVotes += data.vote.votes[i];
 			    	}
