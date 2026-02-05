@@ -8,22 +8,24 @@
 	<body>
 		<div id="main-body" class="main-body">
 			<div id="app-body" class="app-body">
-				<h2 class="app-title">iCanText - Votes</h2>
-				<span id="my-id" class="my-id">my-id</span>
-				<div id="configuration-votes" class="card">
+				<div id="header-app">
+					<h2 class="app-title">iCanText - Votes</h2>
+					<span id="my-id" class="my-id">my-id</span>
+				</div>
+				
+				<!-- UI for configuration -->
+				<div id="configuration-votes" class="card" style="display: none;">
 					<div id="container-content">
 						<h3>Configuration votes</h3>
 						<h4>Ask a question</h4>
 						<input type="text" name="question" placeholder="Type your question...">
 						<div id="vars-response">
 		  					<h4>Variants of response</h4>
-
-		  <div class="response-item">
-		    <input type="text" name="response1" placeholder="Variant 1">
-		  </div>
-		</div>
-
-		<button id="add-new-response">Add new variant of response</button>
+						  	<div class="response-item">
+						    	<input type="text" name="response1" placeholder="Variant 1">
+						  	</div>
+						</div>
+						<button id="add-new-response">Add new variant of response</button>
 					</div>
 					<h4>Type of choise</h4>
 					<div id="container-configuration">
@@ -36,30 +38,29 @@
 					</div>
 				</div>
 
+				<!-- UI for votes -->
+				<div id="vote-container" class="card vote-container" style="display: none;">
+					<h4 id="table-question">There's your question ?</h4>
+					<ul id="vote-list"></ul>
 
-				<div id="vote-container" class="card vote-container">
-
-					<table>
-						<tr>
-							<th>There's your question ?</th>
-							<th></th>
-						</tr>
-						<tr>
-							<td>Variant 1</td>
-							<td><input type="radio" id="var1" name="variants" value="var1"/></td>
-						</tr>
-						<tr>
-							<td>Variant 2</td>
-							<td><input type="radio" id="var2" name="variants" value="var2"/></td>
-						</tr>
-					</table>
 					<div class="vote-wrapper">
-						  	<button id="cancel-vote-btn" class="btn-secondary">Cancel</button>
-						  	<button id="send-vote-btn" class="btn-primary">Send</button>
-						</div>
+					    <button id="cancel-vote-btn" class="btn-secondary">Cancel</button>
+					    <button id="send-vote-btn" class="btn-primary">Send</button>
+					</div>
 				</div>
+
+				<!-- UI for logs or errors -->
+				<div id="error-log" class="error-log">.error.</div>
+
+				<!-- UI for info -->
+			    <div id="standalone-info">
+			        <h2 style="color: #fff;">Survey Micro-App</h2>
+			        <p>Sondages à choix multiples : Pour voter sur des options (restaurant, priorité de projet) avec mise à jour des barres de progression en temps réel.</p>
+			        <p>To use it, install it in a channel or launch it with the command:</p>
+			        <code>/app https://dahalakov.github.io/icantext-test/</code>
+			    </div>
+
 			</div>
-			<div id="error-log" class="error-log">.error.</div>
 		</div>
 		
 		<script src="https://icantext.com/ICTBridgeSDK.js"></script>
@@ -76,8 +77,9 @@
 		        if (connection.status !== 'READY') {
 		            console.warn('Running in ' + connection.status + ' mode');
 
-			        // force configuration UI for local testing
+			        // force configuration UI for local testing or show info
 			        initVoteMode();
+			        // initInfoMode();
 			        return;
 		        }
 
@@ -100,25 +102,100 @@
 
 		    // vote mode
 		    async function initVoteMode() {
-		        // hide block of configuration vote and show block of vote
-		        document.getElementById('configuration-votes').style.display = 'none';
-		        document.getElementById('vote-container').style.display = 'block';
+			    document.getElementById('configuration-votes').style.display = 'none';
+			    document.getElementById('standalone-info').style.display = 'none';
+			    document.getElementById('header-app').style.display = 'block';
+			    document.getElementById('vote-container').style.display = 'block';
 
-		        // send in log the context of this vote
-		        const state = await sdk.getAppContext();
-		        console.log('Vote context:', state);
+			    // const context = await sdk.getAppContext();
+			    
+			    const context = {
+					"question": "Pizza ou Tacos",
+					"choiceType": "single",
+					"variants": ["Pizza", "Tacos"],
+					"votes": [3, 5]
+				}
+				
+			    console.log('Vote context:', context);
 
+			    if (!context || !context.question) {
+			        console.warn('Empty vote context');
+			        return;
+			    }
 
-		    }
+			    renderVote(context);
+			}
 
 		   // config mode
 		    function initConfigMode() {
 		        document.getElementById('vote-container').style.display = 'none';
+		        document.getElementById('standalone-info').style.display = 'none';
+		        document.getElementById('header-app').style.display = 'block';
 		        document.getElementById('configuration-votes').style.display = 'block';
 
 		        setupResponses();
 		        setupButtons();
 		    }
+
+		    function initInfoMode() {
+		    	document.getElementById('vote-container').style.display = 'none';
+		        document.getElementById('configuration-votes').style.display = 'none';
+		        document.getElementById('header-app').style.display = 'none';
+		        document.getElementById('standalone-info').style.display = 'block';
+
+		    }
+
+		    // generate vote options by data
+			function renderVote(data) {
+			    const question = document.getElementById('table-question');
+			    const list = document.getElementById('vote-list');
+
+			    question.textContent = data.question;
+			    list.innerHTML = '';
+
+			    // define input type
+			    let inputType = 'radio';
+			    if (data.choiceType === 'multiple') {
+			        inputType = 'checkbox';
+			    }
+
+			    // count total votes
+			    let totalVotes = 0;
+			    for (let i = 0; i < data.votes.length; i++) {
+			        totalVotes += data.votes[i];
+			    }
+
+			    // create list items
+			    for (let i = 0; i < data.variants.length; i++) {
+			        const li = document.createElement('li');
+
+			        const label = document.createElement('label');
+
+			        const input = document.createElement('input');
+			        input.type = inputType;
+			        input.name = 'vote';
+			        input.value = i;
+
+			        const text = document.createElement('span');
+			        text.textContent = data.variants[i];
+
+			        let percent = 0;
+			        if (totalVotes > 0) {
+			            percent = ((data.votes[i] / totalVotes) * 100).toFixed(1);
+			        }
+
+			        const info = document.createElement('small');
+			        info.textContent = data.votes[i] + ' votes · ' + percent + '%';
+
+			        label.appendChild(input);
+			        label.appendChild(text);
+
+			        li.appendChild(label);
+			        li.appendChild(info);
+
+			        list.appendChild(li);
+			    }
+			}
 
 		    
 		    // responses configuration
