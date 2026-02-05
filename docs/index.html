@@ -79,6 +79,7 @@
 
 			        // force configuration UI for local testing or show info
 			        initVoteMode();
+			        // initConfigMode();
 			        // initInfoMode();
 			        return;
 		        }
@@ -115,7 +116,7 @@
 						"question": "Pizza ou Tacos",
 						"choiceType": "single",
 						"variants": ["Pizza", "Tacos"],
-						"votes": [5, 3]
+						"votes": [0, 0]
 					}
 				}
 				*/
@@ -282,7 +283,7 @@
 
 		        data.responses = responses;
 		        data.votes = responsesCount;
-
+		        console.log("DataVotes: " + data.votes)
 		        return data;
 		    }
 
