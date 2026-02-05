@@ -163,10 +163,12 @@
 			    console.log("Data: " + data.vote.votes)
 			    // count total votes
 			    let totalVotes = 0;
-			    for (let i = 0; i < data.vote.votes.length; i++) {
-			        totalVotes += data.vote.votes[i];
+			    if (data.vote.votes!=null){
+			    	for (let i = 0; i < data.vote.votes.length; i++) {
+			        	totalVotes += data.vote.votes[i];
+			    	}
 			    }
-
+			    
 			    // create list items
 			    for (let i = 0; i < data.vote.variants.length; i++) {
 			        const li = document.createElement('li');
