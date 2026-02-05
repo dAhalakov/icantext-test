@@ -267,18 +267,21 @@
 		        const choiceInput = document.querySelector('input[name="choise"]:checked');
 		        data.choiceType = choiceInput ? choiceInput.value : 'single';
 
-		        // collect response variants
+		        // collect response variants and responses count
 		        const responses = [];
+		        const responsesCount = [];
 		        const responseInputs = document.querySelectorAll('#vars-response input[type="text"]');
 
 		        for (let i = 0; i < responseInputs.length; i++) {
 		            const value = responseInputs[i].value.trim();
 		            if (value !== '') {
 		                responses.push(value);
+		                responsesCount.push(0);
 		            }
 		        }
 
 		        data.responses = responses;
+		        data.votes = responsesCount;
 
 		        return data;
 		    }
