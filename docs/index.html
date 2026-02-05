@@ -107,15 +107,15 @@
 			    document.getElementById('header-app').style.display = 'block';
 			    document.getElementById('vote-container').style.display = 'block';
 
-			    // const context = await sdk.getAppContext();
-			    
+			    const context = await sdk.getAppContext();
+			    /*
 			    const context = {
 					"question": "Pizza ou Tacos",
 					"choiceType": "single",
 					"variants": ["Pizza", "Tacos"],
 					"votes": [3, 5]
 				}
-				
+				*/
 			    console.log('Vote context:', context);
 
 			    if (!context || !context.question) {
