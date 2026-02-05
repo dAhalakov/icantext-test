@@ -110,19 +110,21 @@
 			    const context = await sdk.getAppContext();
 			    /*
 			    const context = {
-					"question": "Pizza ou Tacos",
-					"choiceType": "single",
-					"variants": ["Pizza", "Tacos"],
-					"votes": [3, 5]
+			    	messageId: "message-id",
+			    	vote: {
+						"question": "Pizza ou Tacos",
+						"choiceType": "single",
+						"variants": ["Pizza", "Tacos"],
+						"votes": [3, 5]
+					}
 				}
 				*/
-			    console.log('Vote context:', context);
+			    console.log('Vote context vote:', context.vote.question);
 
 			    if (!context || !context.vote.question) {
 			        console.warn('Empty vote context');
 			        return;
 			    }
-
 			    renderVote(context);
 			}
 
@@ -150,7 +152,7 @@
 			    const question = document.getElementById('table-question');
 			    const list = document.getElementById('vote-list');
 
-			    question.textContent = data.question;
+			    question.textContent = data.vote.question;
 			    list.innerHTML = '';
 
 			    // define input type
@@ -158,15 +160,15 @@
 			    if (data.choiceType === 'multiple') {
 			        inputType = 'checkbox';
 			    }
-
+			    console.log("Data: " + data.vote.votes)
 			    // count total votes
 			    let totalVotes = 0;
-			    for (let i = 0; i < data.votes.length; i++) {
-			        totalVotes += data.votes[i];
+			    for (let i = 0; i < data.vote.votes.length; i++) {
+			        totalVotes += data.vote.votes[i];
 			    }
 
 			    // create list items
-			    for (let i = 0; i < data.variants.length; i++) {
+			    for (let i = 0; i < data.vote.variants.length; i++) {
 			        const li = document.createElement('li');
 
 			        const label = document.createElement('label');
@@ -177,15 +179,15 @@
 			        input.value = i;
 
 			        const text = document.createElement('span');
-			        text.textContent = data.variants[i];
+			        text.textContent = data.vote.variants[i];
 
 			        let percent = 0;
 			        if (totalVotes > 0) {
-			            percent = ((data.votes[i] / totalVotes) * 100).toFixed(1);
+			            percent = ((data.vote.votes[i] / totalVotes) * 100).toFixed(1);
 			        }
 
 			        const info = document.createElement('small');
-			        info.textContent = data.votes[i] + ' votes · ' + percent + '%';
+			        info.textContent = data.vote.votes[i] + ' votes · ' + percent + '%';
 
 			        label.appendChild(input);
 			        label.appendChild(text);
