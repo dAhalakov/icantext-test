@@ -114,9 +114,9 @@
 			    	messageId: "message-id",
 			    	vote: {
 						"question": "Pizza ou Tacos",
-						"choiceType": "single",
-						"variants": ["Pizza", "Tacos"],
-						"votes": [0, 0]
+						"choiceType": "multiple",
+						"responses": ["Pizza", "Tacos"],
+						"votes": [5, 3]
 					}
 				}
 				*/
@@ -158,10 +158,10 @@
 
 			    // define input type
 			    let inputType = 'radio';
-			    if (data.choiceType === 'multiple') {
+			    if (data.vote.choiceType === 'multiple') {
 			        inputType = 'checkbox';
 			    }
-			    console.log("Data: " + data.vote.votes)
+			    console.log("choiceType: " + data.vote.choiceType)
 			    // count total votes
 			    let totalVotes = 0;
 			    if (data.vote.votes){
