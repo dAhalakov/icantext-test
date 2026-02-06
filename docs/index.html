@@ -367,7 +367,7 @@
 		        }
 
 		        const selectedIndex = parseInt(selected.value, 10);
-		        const selectedLabel = context.votes.responses[selectedIndex];
+		        const selectedLabel = context.vote.responses[selectedIndex];
 
 		        // Send vote as a message (REAL SDK FLOW)
 		        await sdk.postMessage({
