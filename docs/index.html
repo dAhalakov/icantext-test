@@ -137,7 +137,7 @@
 
 			    document.getElementById('send-vote-btn').onclick = sendVote;
 			    document.getElementById('undo-vote-btn').onclick = undoVote;
-			    document.getElementById('close-result-btn').onclick = () => sdk.closeApp();
+			    document.getElementById('close-vote-btn').onclick = () => sdk.closeApp();
 			    document.getElementById('cancel-vote-btn').onclick = () => sdk.closeApp();
 
 			    // realtime updates
@@ -349,34 +349,42 @@
 		    document.getElementById('send-vote-btn').addEventListener('click', sendVote);
 
 		    // send vote
-			function sendVote() {
-			    if (hasVoted) return;
+			async function sendVote() {
+		        // Get app context (current vote state)
+		        const context = await sdk.getAppContext();
 
-			    const inputs = document.querySelectorAll('#vote-list input');
-			    const selected = [];
+		        if (!context || !context.variants) {
+		            alert('Vote data not found');
+		            return;
+		        }
 
-			    inputs.forEach(input => {
-			        if (input.checked) {
-			            selected.push(parseInt(input.value));
-			        }
-			    });
+		        // Get selected option
+		        const selected = document.querySelector('input[name="vote-option"]:checked');
 
-			    if (selected.length === 0) {
-			        alert('Please select at least one option');
-			        return;
-			    }
+		        if (!selected) {
+		            alert('Please select an option');
+		            return;
+		        }
 
-			    selected.forEach(i => {
-			        currentContext.vote.votes[i]++;
-			    });
+		        const selectedIndex = parseInt(selected.value, 10);
+		        const selectedLabel = context.variants[selectedIndex];
 
-			    hasVoted = true;
-			    userVoteIndexes = selected;
+		        // Send vote as a message (REAL SDK FLOW)
+		        await sdk.postMessage({
+		            text: `User voted for: ${selectedLabel}`
+		        });
 
-			    sdk.setAppContext(currentContext);
+		        // Disable voting after submit
+		        const inputs = document.querySelectorAll('input[name="vote-option"]');
+		        inputs.forEach(input => input.disabled = true);
 
-			    showResult();
-			}
+		        // Show result message
+		        const result = document.getElementById('vote-result');
+		        if (result) {
+		            result.textContent = `You voted for "${selectedLabel}"`;
+		            result.style.display = 'block';
+		        }
+		    }
 
 			// show result UI
 			function showResult() {
