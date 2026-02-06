@@ -79,8 +79,9 @@
 		    // initialize iCanText Bridge SDK
 		    const sdk = new ICTBridgeSDK('votes_app');
 
-		    let localHasVoted = false;
-			let localVoteIndexes = [];
+		    let currentContext = null;
+			let hasVoted = false;
+			let userVoteIndexes = [];
 
 		    // start app
 		    async function startApp() {
@@ -91,9 +92,9 @@
 		            console.warn('Running in ' + connection.status + ' mode');
 
 			        // force configuration UI for local testing or show info
-			        initVoteMode();
+			        // initVoteMode();
 			        // initConfigMode();
-			        // initInfoMode();
+			        initInfoMode();
 			        return;
 		        }
 
@@ -120,32 +121,30 @@
 			});
 
 
-		    // vote mode
-		    async function initVoteMode() {
+		    // init vote mode
+			async function initVoteMode() {
 			    document.getElementById('configuration-votes').style.display = 'none';
 			    document.getElementById('standalone-info').style.display = 'none';
-			    document.getElementById('header-app').style.display = 'block';
 			    document.getElementById('vote-container').style.display = 'block';
 
-			    const context = await sdk.getAppContext();
-			    /*
-			    const context = {
-			    	messageId: "message-id",
-			    	vote: {
-						"question": "Pizza ou Tacos",
-						"choiceType": "multiple",
-						"responses": ["Pizza", "Tacos"],
-						"votes": [5, 3]
-					}
-				}
-				*/
-			    console.log('Vote context: ', context);
-
-			    if (!context || !context.vote.question) {
+			    currentContext = await sdk.getAppContext();
+			    if (!currentContext || !currentContext.vote) {
 			        console.warn('Empty vote context');
 			        return;
 			    }
-			    renderVote(context);
+
+			    renderVote(currentContext);
+
+			    document.getElementById('send-vote-btn').onclick = sendVote;
+			    document.getElementById('undo-vote-btn').onclick = undoVote;
+			    document.getElementById('close-result-btn').onclick = () => sdk.closeApp();
+			    document.getElementById('cancel-vote-btn').onclick = () => sdk.closeApp();
+
+			    // realtime updates
+			    sdk.onContextUpdate((updatedContext) => {
+			        currentContext = updatedContext;
+			        renderVote(updatedContext);
+			    });
 			}
 
 		   // config mode
@@ -166,72 +165,62 @@
 		        document.getElementById('standalone-info').style.display = 'block';
 		    }
 
-		    // generate vote options by data
-			function renderVote(data) {
+		    // render vote UI
+			function renderVote(context) {
 			    const question = document.getElementById('table-question');
 			    const list = document.getElementById('vote-list');
 
-			    question.textContent = data.vote.question;
+			    question.textContent = context.vote.question;
 			    list.innerHTML = '';
 
-			    // define input type
-			    let inputType = 'radio';
-			    if (data.vote.choiceType === 'multiple') {
-			        inputType = 'checkbox';
-			    }
-			    console.log("choiceType: " + data.vote.choiceType)
-			    // count total votes
-			    let totalVotes = 0;
-			    if (data.vote.votes){
-			    	for (let i = 0; i < data.vote.votes.length; i++) {
-			        	totalVotes += data.vote.votes[i];
-			    	}
-			    }
-			    
-			    // create list items
-			    for (let i = 0; i < data.vote.responses.length; i++) {
-			        const li = document.createElement('li');
+			    const inputType = context.vote.choiceType === 'multiple' ? 'checkbox' : 'radio';
 
-			        const label = document.createElement('label');
+			    let totalVotes = context.vote.votes.reduce((a, b) => a + b, 0);
+
+			    context.vote.responses.forEach((label, index) => {
+			        const li = document.createElement('li');
 
 			        const input = document.createElement('input');
 			        input.type = inputType;
 			        input.name = 'vote';
-			        input.value = i;
-			        input.disabled = localHasVoted;
+			        input.value = index;
+			        input.disabled = hasVoted;
 
-			        const text = document.createElement('span');
-			        text.textContent = data.vote.responses[i];
+			        const span = document.createElement('span');
+			        span.textContent = label;
 
-			        let percent = 0;
-			        if (totalVotes > 0) {
-			            percent = ((data.vote.votes[i] / totalVotes) * 100).toFixed(1);
-			        }
+			        const percent = totalVotes > 0
+			            ? ((context.vote.votes[index] / totalVotes) * 100).toFixed(1)
+			            : 0;
 
 			        const info = document.createElement('small');
-			        info.textContent = data.vote.votes[i] + ' votes · ' + percent + '%';
+			        info.textContent = `${context.vote.votes[index]} votes · ${percent}%`;
 
-			        label.appendChild(input);
-			        label.appendChild(text);
-
-			        li.appendChild(label);
+			        li.appendChild(input);
+			        li.appendChild(span);
 			        li.appendChild(info);
 
 			        list.appendChild(li);
-			    }
+			    });
 			}
 
-			function resetVoteUI() {
-			    document.getElementById('vote-info').style.display = 'none';
-			    document.getElementById('cancel-vote-btn').style.display = 'none';
-			    document.getElementById('close-vote-btn').style.display = 'none';
+			// undo vote
+			function undoVote() {
+			    userVoteIndexes.forEach(i => {
+			        currentContext.vote.votes[i]--;
+			    });
 
-			    const inputs = document.querySelectorAll('input[name="vote"]');
-			    for (let i = 0; i < inputs.length; i++) {
-			        inputs[i].checked = false;
-			    }
+			    hasVoted = false;
+			    userVoteIndexes = [];
+
+			    sdk.setAppContext(currentContext);
+
+			    document.getElementById('vote-actions').style.display = 'flex';
+			    document.getElementById('vote-result-info').style.display = 'none';
+			    document.getElementById('vote-result-actions').style.display = 'none';
+
+			    renderVote(currentContext);
 			}
-
 		    
 		    // responses configuration
 		    function setupResponses() {
@@ -357,54 +346,49 @@
 		        sdk.closeApp();
 		    }
 
-		    async function onSendVote() {
-			    const context = await sdk.getAppContext();
-			    const vote = context.vote;
+		    document.getElementById('send-vote-btn').addEventListener('click', sendVote);
 
-			    const selected = document.querySelectorAll('input[name="vote"]:checked');
+		    // send vote
+			function sendVote() {
+			    if (hasVoted) return;
+
+			    const inputs = document.querySelectorAll('#vote-list input');
+			    const selected = [];
+
+			    inputs.forEach(input => {
+			        if (input.checked) {
+			            selected.push(parseInt(input.value));
+			        }
+			    });
 
 			    if (selected.length === 0) {
 			        alert('Please select at least one option');
 			        return;
 			    }
 
-			    localVoteIndexes = [];
-
-			    for (let i = 0; i < selected.length; i++) {
-			        const index = parseInt(selected[i].value, 10);
-			        vote.votes[index]++;
-			        localVoteIndexes.push(index);
-			    }
-
-			    localHasVoted = true;
-
-			    await sdk.setAppContext({
-			        ...context,
-			        vote: vote
+			    selected.forEach(i => {
+			        currentContext.vote.votes[i]++;
 			    });
 
-			    sdk.sendData({
-			        type: 'vote-updated',
-			        vote: vote
-			    });
+			    hasVoted = true;
+			    userVoteIndexes = selected;
 
-			    showResultMessage(vote);
-			    renderVote({ vote });
+			    sdk.setAppContext(currentContext);
+
+			    showResult();
 			}
 
-			function showResultMessage(vote) {
-			    const info = document.getElementById('vote-info');
-			    const cancelBtn = document.getElementById('cancel-vote-btn');
-			    const closeBtn = document.getElementById('close-vote-btn');
+			// show result UI
+			function showResult() {
+			    document.getElementById('vote-actions').style.display = 'none';
+			    document.getElementById('vote-result-info').style.display = 'block';
+			    document.getElementById('vote-result-actions').style.display = 'flex';
 
-			    const labels = localVoteIndexes.map(i => vote.responses[i]);
-
-			    info.textContent = 'You voted for: ' + labels.join(', ');
-			    info.style.display = 'block';
-
-			    cancelBtn.style.display = 'inline-block';
-			    closeBtn.style.display = 'inline-block';
+			    const names = userVoteIndexes.map(i => currentContext.vote.responses[i]);
+			    document.getElementById('vote-result-text').textContent =
+			        'You voted for: ' + names.join(', ');
 			}
+
 
 			async function onCancelVote() {
 			    const context = await sdk.getAppContext();
