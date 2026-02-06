@@ -353,7 +353,7 @@
 		        // Get app context (current vote state)
 		        const context = await sdk.getAppContext();
 		        console.log(context);
-		        if (!context || !context.votes.responses) {
+		        if (!context || !context.vote.responses) {
 		            alert('Vote data not found');
 		            return;
 		        }
