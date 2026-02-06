@@ -352,7 +352,7 @@
 			async function sendVote() {
 		        // Get app context (current vote state)
 		        const context = await sdk.getAppContext();
-		        console.log(context);
+		        console.log("context" + context);
 		        if (!context || !context.votes.variants) {
 		            alert('Vote data not found');
 		            return;
