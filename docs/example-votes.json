@@ -1,6 +1,9 @@
 {
-	"question": "Pizza ou Tacos",
-	"choiceType": "single",
-	"variants": ["Pizza", "Tacos"],
-	"votes": [3, 5]
+	"messageId": "example-id",
+	vote{
+		"question": "Pizza ou Tacos",
+		"choiceType": "single",
+		"variants": ["Pizza", "Tacos"],
+		"votes": [3, 5]
+	}
 }
