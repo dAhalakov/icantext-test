@@ -274,7 +274,8 @@
 	        votes: localVote.votes
 	    });
 	    const targetIDs = await sdk.getPeers();
-	    sdk.sendData(targetIDs, {
+	    const activePeers = targetIDs.filter(p => p.isActiveOnApp);
+	    sdk.sendData(activePeers, {
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
@@ -293,7 +294,8 @@
 	    hasVoted = false;
 	    userVoteIndexes = [];
 	    const targetIDs = await sdk.getPeers();
-	    sdk.sendData(targetIDs, {
+	    const activePeers = targetIDs.filter(p => p.isActiveOnApp);
+	    sdk.sendData(activePeers, {
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
