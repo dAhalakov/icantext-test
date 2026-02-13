@@ -62,7 +62,6 @@
 
     <div id="vote-result-actions" class="vote-wrapper" style="display:none;">
         <button id="undo-vote-btn" class="btn-secondary">Cancel my vote</button>
-        <button id="close-btn" class="btn-primary">Close</button>
     </div>
 </div>
 
@@ -96,6 +95,8 @@
 	    document.getElementById("my-id").textContent = connection.localPseudonym;
 
 	    if (sdk.getDisplayMode() === 'MESSAGE') {
+	    	const history = await sdk.getAppEvents();
+    		history.forEach(evt => countVote(evt.senderId, evt.data.votes));
 	        initVoteMode();
 	    } else {
 	        initConfigMode();
@@ -105,13 +106,21 @@
 	startApp();
 
 
-	sdk.onData((from, payload) => {
-		console.log("Reception:", payload);
-	    if (payload.type === 'vote-update') {
-	        localVote.votes = payload.votes;
+	sdk.onAppEvent((senderId, data, timestamp) => {
+	    console.log(`User ${senderId} voted for:`, data.vote);
+	    if (data.type === 'vote-update') {
+	        localVote.votes = data.votes;
 	        renderVote();
 	    }
 	});
+
+	// sdk.onData((from, payload) => {
+	// 	console.log("Reception:", payload);
+	//     if (payload.type === 'vote-update') {
+	//         localVote.votes = payload.votes;
+	//         renderVote();
+	//     }
+	// });
 
 
 	function initConfigMode() {
@@ -180,7 +189,9 @@
 	        {
 	            messageId: messageId,
 	            vote: voteData
-	        }
+	        }, { 
+    			interactionModel: 'OWNER_ONLY' 
+			}
 	    );
 
 	    sdk.closeApp();
@@ -203,8 +214,7 @@
 
 	    document.getElementById('send-vote-btn').onclick = sendVote;
 	    document.getElementById('undo-vote-btn').onclick = undoVote;
-	    document.getElementById('cancel-btn').onclick = () => sdk.closeApp;
-	    document.getElementById('close-btn').onclick = () => sdk.closeApp();
+	    document.getElementById('cancel-btn').onclick = () => sdk.closeApp();
 	}
 
 
@@ -269,15 +279,20 @@
 	    });
 
 	    hasVoted = true;
-	    console.log("Envoi:", {
-	        type: 'vote-update',
-	        votes: localVote.votes
-	    });
-	    const targetIDs = await sdk.getPeers();
-	    console.log("targetIDs:", targetIDs);
-	    const activePeers = targetIDs.filter(p => p.isActiveOnApp);
-	    // console.log(activePeers);
-	    sdk.sendData(activePeers, {
+	    // console.log("Envoi:", {
+	    //     type: 'vote-update',
+	    //     votes: localVote.votes
+	    // });
+	    // const targetIDs = await sdk.getPeers();
+	    // console.log("targetIDs:", targetIDs);
+	    // const activePeers = targetIDs.filter(p => p.isActiveOnApp);
+	    // // console.log(activePeers);
+	    // sdk.sendData(activePeers, {
+	    //     type: 'vote-update',
+	    //     votes: localVote.votes
+	    // });
+
+	    sdk.emitAppEvent({
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
@@ -295,9 +310,14 @@
 
 	    hasVoted = false;
 	    userVoteIndexes = [];
-	    const targetIDs = await sdk.getPeers();
-	    const activePeers = targetIDs.filter(p => p.isActiveOnApp);
-	    sdk.sendData(activePeers, {
+	    // const targetIDs = await sdk.getPeers();
+	    // const activePeers = targetIDs.filter(p => p.isActiveOnApp);
+	    // sdk.sendData(activePeers, {
+	    //     type: 'vote-update',
+	    //     votes: localVote.votes
+	    // });
+
+	    sdk.emitAppEvent({
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
