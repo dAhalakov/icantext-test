@@ -250,7 +250,7 @@
 	}
 
 
-	function sendVote() {
+	async function sendVote() {
 
 	    if (hasVoted) return;
 
@@ -286,7 +286,7 @@
 	}
 
 
-	function undoVote() {
+	async function undoVote() {
 
 	    userVoteIndexes.forEach(index => {
 	        localVote.votes[index]--;
