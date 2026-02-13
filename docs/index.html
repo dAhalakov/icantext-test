@@ -107,6 +107,7 @@
 
 
 	sdk.onData((from, payload) => {
+		console.log("Reception:", payload);
 	    if (payload.type === 'vote-update') {
 	        localVote.votes = payload.votes;
 	        renderVote();
@@ -269,7 +270,10 @@
 	    });
 
 	    hasVoted = true;
-
+	    consoole.log("Envoi:", {
+	        type: 'vote-update',
+	        votes: localVote.votes
+	    });
 	    sdk.sendData({
 	        type: 'vote-update',
 	        votes: localVote.votes
