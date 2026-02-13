@@ -275,6 +275,7 @@
 	    });
 	    const targetIDs = await sdk.getPeers();
 	    const activePeers = targetIDs.filter(p => p.isActiveOnApp);
+	    console.log(activePeers);
 	    sdk.sendData(activePeers, {
 	        type: 'vote-update',
 	        votes: localVote.votes
