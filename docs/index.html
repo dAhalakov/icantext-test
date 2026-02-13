@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>iCanText HTML Test</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>iCanText HTML Test</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
 
+<body>
 <div id="main-body" class="main-body">
 <div id="app-body" class="app-body">
 
@@ -15,25 +15,36 @@
     <span id="my-id" class="my-id">my-id</span>
 </div>
 
-<!-- CONFIGURATION MODE -->
+<!-- CONFIGURATION -->
 <div id="configuration-votes" class="card" style="display:none;">
-    <h3>Create vote</h3>
+    <div id="container-content">
+        <h3>Configuration votes</h3>
 
-    <input type="text" id="question-input" placeholder="Type your question...">
+        <h4>Ask a question</h4>
+        <input type="text" id="question-input" placeholder="Type your question...">
 
-    <div id="responses-container">
-        <input type="text" class="response-input" placeholder="Variant 1">
+        <div id="vars-response">
+            <h4>Variants of response</h4>
+
+            <div class="response-item">
+                <input type="text" class="response-input" placeholder="Variant 1">
+                <button type="button" class="remove-response">X</button>
+            </div>
+        </div>
+
+        <button id="add-new-response">Add new variant of response</button>
     </div>
 
-    <button id="add-response-btn">Add variant</button>
-
-    <div>
-        <label><input type="radio" name="choice" value="single" checked> Single</label>
-        <label><input type="radio" name="choice" value="multiple"> Multiple</label>
+    <h4>Type of choice</h4>
+    <div id="container-configuration">
+        <label><input type="radio" name="choice" value="single" checked> Single choice</label>
+        <label><input type="radio" name="choice" value="multiple"> Multiple choice</label>
     </div>
 
-    <button id="create-vote-btn">Create vote</button>
-    <button id="cancel-config-btn">Cancel</button>
+    <div class="create-vote-wrapper">
+        <button id="cancel-vote-btn" class="btn-secondary">Cancel</button>
+        <button id="create-vote-btn" class="btn-primary">Create vote</button>
+    </div>
 </div>
 
 <!-- VOTE MODE -->
@@ -45,19 +56,19 @@
         <p id="vote-result-text"></p>
     </div>
 
-    <div id="vote-actions">
-        <button id="cancel-btn">Cancel</button>
-        <button id="send-vote-btn">Send</button>
+    <div id="vote-actions" class="vote-wrapper">
+        <button id="cancel-btn" class="btn-secondary">Cancel</button>
+        <button id="send-vote-btn" class="btn-primary">Send</button>
     </div>
 
-    <div id="vote-result-actions" style="display:none;">
-        <button id="undo-vote-btn">Cancel my vote</button>
-        <button id="close-btn">Close</button>
+    <div id="vote-result-actions" class="vote-wrapper" style="display:none;">
+        <button id="undo-vote-btn" class="btn-secondary">Cancel my vote</button>
+        <button id="close-btn" class="btn-primary">Close</button>
     </div>
 </div>
 
 <div id="standalone-info">
-    <h3>Run inside iCanText channel</h3>
+    <h2 style="color:#fff;">Survey Micro-App</h2>
 </div>
 
 </div>
@@ -65,12 +76,14 @@
 
 <script src="https://icantext.com/ICTBridgeSDK.js"></script>
 <script>
+
 	const sdk = new ICTBridgeSDK('votes_app');
 
 	let currentContext = null;
 	let localVote = null;
 	let hasVoted = false;
 	let userVoteIndexes = [];
+
 
 	async function startApp() {
 
@@ -102,19 +115,43 @@
 
 
 	function initConfigMode() {
+
 	    document.getElementById('configuration-votes').style.display = 'block';
 	    document.getElementById('standalone-info').style.display = 'none';
 
-	    document.getElementById('add-response-btn').onclick = () => {
-	        const input = document.createElement('input');
-	        input.type = 'text';
-	        input.className = 'response-input';
-	        input.placeholder = 'Variant';
-	        document.getElementById('responses-container').appendChild(input);
-	    };
-
+	    document.getElementById('add-new-response').onclick = addResponse;
 	    document.getElementById('create-vote-btn').onclick = createVote;
-	    document.getElementById('cancel-config-btn').onclick = () => sdk.closeApp();
+	    document.getElementById('cancel-vote-btn').onclick = () => sdk.closeApp();
+
+	    document.addEventListener('click', function(e){
+	        if (e.target.classList.contains('remove-response')) {
+	            if (document.querySelectorAll('.response-item').length > 1) {
+	                e.target.parentElement.remove();
+	            }
+	        }
+	    });
+	}
+
+	function addResponse() {
+
+	    const container = document.getElementById('vars-response');
+
+	    const wrapper = document.createElement('div');
+	    wrapper.className = 'response-item';
+
+	    const input = document.createElement('input');
+	    input.type = 'text';
+	    input.className = 'response-input';
+	    input.placeholder = 'Variant';
+
+	    const removeBtn = document.createElement('button');
+	    removeBtn.type = 'button';
+	    removeBtn.className = 'remove-response';
+	    removeBtn.textContent = 'X';
+
+	    wrapper.appendChild(input);
+	    wrapper.appendChild(removeBtn);
+	    container.appendChild(wrapper);
 	}
 
 	async function createVote() {
@@ -122,23 +159,17 @@
 	    const question = document.getElementById('question-input').value.trim();
 	    const choiceType = document.querySelector('input[name="choice"]:checked').value;
 
-	    const responseInputs = document.querySelectorAll('.response-input');
 	    const responses = [];
 	    const votes = [];
 
-	    responseInputs.forEach(input => {
+	    document.querySelectorAll('.response-input').forEach(input => {
 	        if (input.value.trim() !== '') {
 	            responses.push(input.value.trim());
 	            votes.push(0);
 	        }
 	    });
 
-	    const voteData = {
-	        question,
-	        choiceType,
-	        responses,
-	        votes
-	    };
+	    const voteData = { question, choiceType, responses, votes };
 
 	    const messageId = await sdk.postMessage({
 	        text: "New vote: " + question
@@ -172,7 +203,7 @@
 
 	    document.getElementById('send-vote-btn').onclick = sendVote;
 	    document.getElementById('undo-vote-btn').onclick = undoVote;
-	    document.getElementById('cancel-btn').onclick = () => sdk.closeApp();
+	    document.getElementById('cancel-btn').onclick = () => sdk.closeApp;
 	    document.getElementById('close-btn').onclick = () => sdk.closeApp();
 	}
 
@@ -251,8 +282,6 @@
 
 	function undoVote() {
 
-	    if (!hasVoted) return;
-
 	    userVoteIndexes.forEach(index => {
 	        localVote.votes[index]--;
 	    });
@@ -265,7 +294,7 @@
 	        votes: localVote.votes
 	    });
 
-	    document.getElementById('vote-actions').style.display = 'block';
+	    document.getElementById('vote-actions').style.display = 'flex';
 	    document.getElementById('vote-result-info').style.display = 'none';
 	    document.getElementById('vote-result-actions').style.display = 'none';
 
@@ -277,7 +306,7 @@
 
 	    document.getElementById('vote-actions').style.display = 'none';
 	    document.getElementById('vote-result-info').style.display = 'block';
-	    document.getElementById('vote-result-actions').style.display = 'block';
+	    document.getElementById('vote-result-actions').style.display = 'flex';
 
 	    const names = userVoteIndexes.map(i => localVote.responses[i]);
 
