@@ -95,6 +95,7 @@
 	    document.getElementById("my-id").textContent = connection.localPseudonym;
 
 	    if (sdk.getDisplayMode() === 'MESSAGE') {
+	    	console.log("startApp enter");
 	    	const history = await sdk.getAppEvents();
     		history.forEach(evt => countVote(evt.senderId, evt.data.votes));
 	        initVoteMode();
@@ -121,7 +122,6 @@
 	//         renderVote();
 	//     }
 	// });
-
 
 	function initConfigMode() {
 
@@ -199,7 +199,7 @@
 
 
 	async function initVoteMode() {
-
+		console.log("initVoteMode enter");
 	    document.getElementById('vote-container').style.display = 'block';
 	    document.getElementById('standalone-info').style.display = 'none';
 
