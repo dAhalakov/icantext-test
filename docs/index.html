@@ -2,51 +2,69 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>iCanText Votes</title>
+    <title>iCanText HTML Test</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="main-body" class="main-body">
-    <div id="app-body" class="app-body">
+<div id="app-body" class="app-body">
 
-        <div id="header-app">
-            <h2 class="app-title">iCanText - Votes</h2>
-            <span id="my-id" class="my-id">my-id</span>
-        </div>
+<div id="header-app">
+    <h2 class="app-title">iCanText - Votes</h2>
+    <span id="my-id" class="my-id">my-id</span>
+</div>
 
-        <!-- VOTE UI -->
-        <div id="vote-container" class="card vote-container" style="display:none;">
-            <h4 id="table-question"></h4>
-            <ul id="vote-list"></ul>
+<!-- CONFIGURATION MODE -->
+<div id="configuration-votes" class="card" style="display:none;">
+    <h3>Create vote</h3>
 
-            <div id="vote-result-info" style="display:none;">
-                <p id="vote-result-text"></p>
-            </div>
+    <input type="text" id="question-input" placeholder="Type your question...">
 
-            <div id="vote-actions" class="vote-wrapper">
-                <button id="cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="send-vote-btn" class="btn-primary">Send</button>
-            </div>
-
-            <div id="vote-result-actions" class="vote-wrapper" style="display:none;">
-                <button id="undo-vote-btn" class="btn-secondary">Cancel my vote</button>
-                <button id="close-btn" class="btn-primary">Close</button>
-            </div>
-        </div>
-
-        <div id="standalone-info">
-            <h2 style="color:#fff;">Survey Micro-App</h2>
-            <p>To use:</p>
-            <code>/app https://dahalakov.github.io/icantext-test/</code>
-        </div>
-
+    <div id="responses-container">
+        <input type="text" class="response-input" placeholder="Variant 1">
     </div>
+
+    <button id="add-response-btn">Add variant</button>
+
+    <div>
+        <label><input type="radio" name="choice" value="single" checked> Single</label>
+        <label><input type="radio" name="choice" value="multiple"> Multiple</label>
+    </div>
+
+    <button id="create-vote-btn">Create vote</button>
+    <button id="cancel-config-btn">Cancel</button>
+</div>
+
+<!-- VOTE MODE -->
+<div id="vote-container" class="card vote-container" style="display:none;">
+    <h4 id="table-question"></h4>
+    <ul id="vote-list"></ul>
+
+    <div id="vote-result-info" style="display:none;">
+        <p id="vote-result-text"></p>
+    </div>
+
+    <div id="vote-actions">
+        <button id="cancel-btn">Cancel</button>
+        <button id="send-vote-btn">Send</button>
+    </div>
+
+    <div id="vote-result-actions" style="display:none;">
+        <button id="undo-vote-btn">Cancel my vote</button>
+        <button id="close-btn">Close</button>
+    </div>
+</div>
+
+<div id="standalone-info">
+    <h3>Run inside iCanText channel</h3>
+</div>
+
+</div>
 </div>
 
 <script src="https://icantext.com/ICTBridgeSDK.js"></script>
 <script>
-
 	const sdk = new ICTBridgeSDK('votes_app');
 
 	let currentContext = null;
@@ -54,8 +72,8 @@
 	let hasVoted = false;
 	let userVoteIndexes = [];
 
-	// START
 	async function startApp() {
+
 	    const connection = await sdk.init();
 
 	    if (connection.status !== 'READY') {
@@ -67,12 +85,14 @@
 
 	    if (sdk.getDisplayMode() === 'MESSAGE') {
 	        initVoteMode();
+	    } else {
+	        initConfigMode();
 	    }
 	}
 
 	startApp();
 
-	// REALTIME UPDATE
+
 	sdk.onData((from, payload) => {
 	    if (payload.type === 'vote-update') {
 	        localVote.votes = payload.votes;
@@ -80,27 +100,83 @@
 	    }
 	});
 
-	// INIT VOTE MODE
+
+	function initConfigMode() {
+	    document.getElementById('configuration-votes').style.display = 'block';
+	    document.getElementById('standalone-info').style.display = 'none';
+
+	    document.getElementById('add-response-btn').onclick = () => {
+	        const input = document.createElement('input');
+	        input.type = 'text';
+	        input.className = 'response-input';
+	        input.placeholder = 'Variant';
+	        document.getElementById('responses-container').appendChild(input);
+	    };
+
+	    document.getElementById('create-vote-btn').onclick = createVote;
+	    document.getElementById('cancel-config-btn').onclick = () => sdk.closeApp();
+	}
+
+	async function createVote() {
+
+	    const question = document.getElementById('question-input').value.trim();
+	    const choiceType = document.querySelector('input[name="choice"]:checked').value;
+
+	    const responseInputs = document.querySelectorAll('.response-input');
+	    const responses = [];
+	    const votes = [];
+
+	    responseInputs.forEach(input => {
+	        if (input.value.trim() !== '') {
+	            responses.push(input.value.trim());
+	            votes.push(0);
+	        }
+	    });
+
+	    const voteData = {
+	        question,
+	        choiceType,
+	        responses,
+	        votes
+	    };
+
+	    const messageId = await sdk.postMessage({
+	        text: "New vote: " + question
+	    });
+
+	    await sdk.postAppContent(
+	        'https://dahalakov.github.io/icantext-test/',
+	        {
+	            messageId: messageId,
+	            vote: voteData
+	        }
+	    );
+
+	    sdk.closeApp();
+	}
+
+
 	async function initVoteMode() {
 
 	    document.getElementById('vote-container').style.display = 'block';
 	    document.getElementById('standalone-info').style.display = 'none';
 
 	    currentContext = await sdk.getAppContext();
+	    if (!currentContext) return;
 
-	    if (!currentContext || !currentContext.vote) return;
-
-	    localVote = JSON.parse(JSON.stringify(currentContext.vote));
+	    localVote = currentContext.vote
+	        ? JSON.parse(JSON.stringify(currentContext.vote))
+	        : JSON.parse(JSON.stringify(currentContext));
 
 	    renderVote();
 
 	    document.getElementById('send-vote-btn').onclick = sendVote;
 	    document.getElementById('undo-vote-btn').onclick = undoVote;
-	    document.getElementById('close-btn').onclick = () => sdk.closeApp();
 	    document.getElementById('cancel-btn').onclick = () => sdk.closeApp();
+	    document.getElementById('close-btn').onclick = () => sdk.closeApp();
 	}
 
-	// RENDER
+
 	function renderVote() {
 
 	    const question = document.getElementById('table-question');
@@ -128,7 +204,6 @@
 	        li.appendChild(input);
 	        li.appendChild(span);
 
-	        // SHOW STATS ONLY AFTER USER VOTED
 	        if (hasVoted) {
 	            const percent = total > 0
 	                ? ((localVote.votes[index] / total) * 100).toFixed(1)
@@ -143,13 +218,12 @@
 	    });
 	}
 
-	// SEND VOTE
+
 	function sendVote() {
 
 	    if (hasVoted) return;
 
 	    const selected = document.querySelectorAll('input[name="vote"]:checked');
-
 	    if (selected.length === 0) {
 	        alert('Please select an option');
 	        return;
@@ -170,11 +244,11 @@
 	        votes: localVote.votes
 	    });
 
-	    showResult();
 	    renderVote();
+	    showResult();
 	}
 
-	// UNDO
+
 	function undoVote() {
 
 	    if (!hasVoted) return;
@@ -191,19 +265,19 @@
 	        votes: localVote.votes
 	    });
 
-	    document.getElementById('vote-actions').style.display = 'flex';
+	    document.getElementById('vote-actions').style.display = 'block';
 	    document.getElementById('vote-result-info').style.display = 'none';
 	    document.getElementById('vote-result-actions').style.display = 'none';
 
 	    renderVote();
 	}
 
-	// SHOW RESULT UI
+
 	function showResult() {
 
 	    document.getElementById('vote-actions').style.display = 'none';
 	    document.getElementById('vote-result-info').style.display = 'block';
-	    document.getElementById('vote-result-actions').style.display = 'flex';
+	    document.getElementById('vote-result-actions').style.display = 'block';
 
 	    const names = userVoteIndexes.map(i => localVote.responses[i]);
 
