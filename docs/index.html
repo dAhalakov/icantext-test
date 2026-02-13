@@ -273,7 +273,8 @@
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
-	    sdk.sendData({
+	    const targetIDs = await sdk.getPeers();
+	    sdk.sendData(targetIDs, {
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
@@ -291,8 +292,8 @@
 
 	    hasVoted = false;
 	    userVoteIndexes = [];
-
-	    sdk.sendData({
+	    const targetIDs = await sdk.getPeers();
+	    sdk.sendData(targetIDs, {
 	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
