@@ -113,7 +113,7 @@
 
 	sdk.onAppEvent((senderId, data, timestamp) => {
 	    console.log(`User ${senderId} voted for:`, data.vote);
-	    if (data.type === 'vote-update') {
+	    if (data.type === 'vote-update' || data.type === 'undo-update') {
 	        localVote.votes = data.votes;
 	        renderVote();
 	        renderNotVotedList();
@@ -221,7 +221,6 @@
 
 	    document.getElementById('send-vote-btn').onclick = sendVote;
 	    document.getElementById('undo-vote-btn').onclick = undoVote;
-	    document.getElementById('cancel-btn').onclick = () => sdk.closeApp();
 	}
 
 
@@ -300,7 +299,7 @@
 	    // });
 
 	    sdk.emitAppEvent({
-	        type: 'vote',
+	        type: 'vote-update',
 	        votes: localVote.votes
 	    });
 
@@ -326,7 +325,7 @@
 	    // });
 
 	    sdk.emitAppEvent({
-	        type: 'undo',
+	        type: 'undo-update',
 	        votes: localVote.votes
 	    });
 
@@ -351,7 +350,8 @@
 	}
 
 	async function renderNotVotedList() {
-	    const activePeers = await sdk.getPeers();
+	    const peers = await sdk.getPeers();
+	    const activePeers = peers.filter(p => p.isActiveOnApp);
 
 	    const events = await sdk.getAppEvents();
 
@@ -359,11 +359,11 @@
 
 	    events.forEach(evt => {
 
-	        if (evt.data.type === 'vote') {
+	        if (evt.data.type === 'vote-update') {
 	            userState[evt.senderId] = 'voted';
 	        }
 
-	        if (evt.data.type === 'undo') {
+	        if (evt.data.type === 'undo-update') {
 	            userState[evt.senderId] = 'undo';
 	        }
 
