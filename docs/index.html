@@ -62,6 +62,11 @@
     <div id="vote-result-actions" class="vote-wrapper" style="display:none;">
         <button id="undo-vote-btn" class="btn-secondary">Cancel my vote</button>
     </div>
+
+    <div id="not-voted-block" style="margin-top:15px;">
+    	<h4>Did not vote yet:</h4>
+    <ul id="not-voted-list"></ul>
+</div>
 </div>
 
 <div id="standalone-info">
@@ -111,6 +116,7 @@
 	    if (data.type === 'vote-update') {
 	        localVote.votes = data.votes;
 	        renderVote();
+	        renderNotVotedList();
 	    }
 	});
 
@@ -211,6 +217,7 @@
 	        : JSON.parse(JSON.stringify(currentContext));
 
 	    renderVote();
+	    renderNotVotedList();
 
 	    document.getElementById('send-vote-btn').onclick = sendVote;
 	    document.getElementById('undo-vote-btn').onclick = undoVote;
@@ -293,11 +300,12 @@
 	    // });
 
 	    sdk.emitAppEvent({
-	        type: 'vote-update',
+	        type: 'vote',
 	        votes: localVote.votes
 	    });
 
 	    renderVote();
+	    renderNotVotedList();
 	    showResult();
 	}
 
@@ -318,7 +326,7 @@
 	    // });
 
 	    sdk.emitAppEvent({
-	        type: 'vote-update',
+	        type: 'undo',
 	        votes: localVote.votes
 	    });
 
@@ -342,6 +350,55 @@
 	        'You voted for: ' + names.join(', ');
 	}
 
+	async function renderNotVotedList() {
+	    const activePeers = await sdk.getPeers();
+
+	    const events = await sdk.getAppEvents();
+
+	    const userState = {};
+
+	    events.forEach(evt => {
+
+	        if (evt.data.type === 'vote') {
+	            userState[evt.senderId] = 'voted';
+	        }
+
+	        if (evt.data.type === 'undo') {
+	            userState[evt.senderId] = 'undo';
+	        }
+
+	    });
+
+	    const list = document.getElementById('not-voted-list');
+	    list.innerHTML = '';
+
+	    let votedCount = 0;
+
+	    activePeers.forEach(peer => {
+
+	        if (userState[peer.pseudonym] === 'voted') {
+	            votedCount++;
+	        } else {
+	            const li = document.createElement('li');
+	            li.textContent = peer.pseudonym;
+	            list.appendChild(li);
+	        }
+
+	    });
+
+	    const totalUsers = activePeers.length;
+
+	    let progress = document.getElementById('vote-progress');
+
+	    if (!progress) {
+	        progress = document.createElement('div');
+	        progress.id = 'vote-progress';
+	        progress.style.marginTop = '10px';
+	        document.getElementById('not-voted-block').prepend(progress);
+	    }
+
+	    progress.textContent = `${votedCount} / ${totalUsers} voted`;
+	}
 </script>
 </body>
 </html>
