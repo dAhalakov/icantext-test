@@ -334,6 +334,7 @@
 	    document.getElementById('vote-result-actions').style.display = 'none';
 
 	    renderVote();
+	    renderNotVotedList();
 	}
 
 
@@ -350,11 +351,13 @@
 	}
 
 	async function renderNotVotedList() {
+		console.log("renderNotVotedList called");
 	    const peers = await sdk.getPeers();
 	    const activePeers = peers.filter(p => p.isActiveOnApp);
 
 	    const events = await sdk.getAppEvents();
 
+	    // Храним последнее состояние пользователя
 	    const userState = {};
 
 	    events.forEach(evt => {
@@ -364,7 +367,7 @@
 	        }
 
 	        if (evt.data.type === 'undo-update') {
-	            userState[evt.senderId] = 'undo';
+	            userState[evt.senderId] = 'not-voted';
 	        }
 
 	    });
