@@ -152,8 +152,8 @@ input[type="radio"] {
   border-radius: 14px;
   border: none;
   cursor: pointer;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-  color: #0b1020;
+  background: linear-gradient(135deg, #1e1e28, #2f2f39);
+  color: #cfd2ff;
 }
 
 .btn-secondary {

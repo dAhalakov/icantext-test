@@ -56,7 +56,6 @@
     </div>
 
     <div id="vote-actions" class="vote-wrapper">
-        <button id="cancel-btn" class="btn-secondary">Cancel</button>
         <button id="send-vote-btn" class="btn-primary">Send</button>
     </div>
 
@@ -124,7 +123,7 @@
 	// });
 
 	function initConfigMode() {
-
+	    document.getElementById('header-app').style.display = 'block';
 	    document.getElementById('configuration-votes').style.display = 'block';
 	    document.getElementById('standalone-info').style.display = 'none';
 
@@ -202,6 +201,7 @@
 		console.log("initVoteMode enter");
 	    document.getElementById('vote-container').style.display = 'block';
 	    document.getElementById('standalone-info').style.display = 'none';
+	    document.getElementById('header-app').style.display = 'none';
 
 	    currentContext = await sdk.getAppContext();
 	    if (!currentContext) return;
