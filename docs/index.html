@@ -100,8 +100,6 @@
 
 	    if (sdk.getDisplayMode() === 'MESSAGE') {
 	    	console.log("startApp enter");
-	    	const history = await sdk.getAppEvents();
-    		history.forEach(evt => countVote(evt.senderId, evt.data.votes));
 	        initVoteMode();
 	    } else {
 	        initConfigMode();
