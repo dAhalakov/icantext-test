@@ -354,7 +354,6 @@
 
 	    const events = await sdk.getAppEvents();
 	    console.log(events);
-	    // Храним пос1леднее состояние пользователя
 	    const userState = [];
  		let votedCount = 0;
 	    events.forEach(evt => {
@@ -399,6 +398,12 @@
 	    }
 
 	    progress.textContent = `${votedCount} / ${totalUsers} voted`;
+	    if (votedCount===totalUsers){
+	    	document.getElementById('not-voted-block').display = "none";
+	    }
+	    else {
+	    	document.getElementById('not-voted-block').display = "block";
+	    }
 	}
 </script>
 </body>
