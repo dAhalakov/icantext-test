@@ -110,7 +110,7 @@
 
 
 	sdk.onAppEvent((senderId, data, timestamp) => {
-	    console.log(`User ${senderId} voted for:`, data.votes);
+	    console.log(`User ${senderId} voted for data:`, data);
 	    if (data.type === 'vote-update' || data.type === 'undo-update') {
 	        localVote.votes = data.votes;
 	        renderVote();
