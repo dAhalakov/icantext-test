@@ -353,8 +353,8 @@
 	    const activePeers = peers.filter(p => p.isActiveOnApp);
 
 	    const events = await sdk.getAppEvents();
-
-	    // Храним последнее состояние пользователя
+	    console.log(events);
+	    // Храним пос1леднее состояние пользователя
 	    const userState = {};
 
 	    events.forEach(evt => {
