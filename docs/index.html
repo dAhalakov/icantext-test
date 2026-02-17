@@ -355,12 +355,13 @@
 	    const events = await sdk.getAppEvents();
 	    console.log(events);
 	    // Храним пос1леднее состояние пользователя
-	    const userState = {};
-
+	    const userState = [];
+ 		let votedCount = 0;
 	    events.forEach(evt => {
 
 	        if (evt.data.type === 'vote-update') {
 	            userState[evt.senderId] = 'voted';
+	            votedCount++;
 	        }
 
 	        if (evt.data.type === 'undo-update') {
@@ -372,12 +373,12 @@
 	    const list = document.getElementById('not-voted-list');
 	    list.innerHTML = '';
 
-	    let votedCount = 0;
+	   
 
 	    activePeers.forEach(peer => {
 
-	        if (userState[peer.pseudonym] === 'voted') {
-	            votedCount++;
+	        if (userState[peer.id] === 'voted') {
+	           
 	        } else {
 	            const li = document.createElement('li');
 	            li.textContent = peer.pseudonym;
