@@ -397,8 +397,8 @@
 	        document.getElementById('not-voted-block').prepend(progress);
 	    }
 
-	    progress.textContent = votedCount. ' / ' . totalUsers . ' voted';
-	    console.log("voted and total: " . votedCount. " and " . totalUsers)
+	    progress.textContent = votedCount.toString() + ' / ' + totalUsers.toString() + ' voted';
+	    console.log("voted and total: ", votedCount, " and " , totalUsers)
 	    if (votedCount===totalUsers){
 	    	document.getElementById('not-voted-block').display = "none";
 	    }
