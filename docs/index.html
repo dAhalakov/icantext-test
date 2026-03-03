@@ -357,25 +357,28 @@
 
 	    const events = await sdk.getAppEvents();
 	    console.log(events);
-	    const userState = [];
- 		let votedCount = 0;
-	    events.forEach(evt => {
+ 		const userState = {};
+		events.forEach(evt => {
 
-	        if (evt.data.type === 'vote-update') {
-	            userState[evt.senderId] = 'voted';
-	            votedCount++;
-	        }
+		    if (evt.data.type === 'vote-update') {
+		        userState[evt.senderId] = 'voted';
+		    }
 
-	        if (evt.data.type === 'undo-update') {
-	            userState[evt.senderId] = 'not-voted';
-	        }
+		    if (evt.data.type === 'undo-update') {
+		        userState[evt.senderId] = 'not-voted';
+		    }
+		});
 
-	    });
+		let votedCount = 0;
+
+		Object.values(userState).forEach(state => {
+		    if (state === 'voted') {
+		        votedCount++;
+		    }
+		});
 
 	    const list = document.getElementById('not-voted-list');
 	    list.innerHTML = '';
-
-	   
 
 	    activePeers.forEach(peer => {
 
@@ -403,10 +406,10 @@
 	    progress.textContent = votedCount.toString() + ' / ' + totalUsers.toString() + ' voted';
 	    console.log("voted and total: ", votedCount, " and " , totalUsers)
 	    if (votedCount===totalUsers){
-	    	document.getElementById('not-voted-block').display = "none";
+	    	document.getElementById('not-voted-block').style.display = "none";
 	    }
 	    else {
-	    	document.getElementById('not-voted-block').display = "block";
+	    	document.getElementById('not-voted-block').style.display = "block";
 	    }
 	}
 </script>
