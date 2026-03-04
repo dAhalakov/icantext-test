@@ -111,6 +111,18 @@
 
 	startApp();
 
+	sdk.onProfileUpdate(async (profile) => {
+
+	    const peers = await sdk.getPeers();
+	    const activePeers = peers.filter(p => p.isActiveOnApp);
+
+	    sdk.sendData(activePeers, {
+	        type: 'nickname-update',
+	        id: profile.id,
+	        pseudonym: profile.pseudonym
+	    });
+
+	});
 
 	sdk.onAppEvent((senderId, data, timestamp) => {
 	    console.log(`User ${senderId} voted for data:`, data);
@@ -121,13 +133,12 @@
 	    }
 	});
 
-	// sdk.onData((from, payload) => {
-	// 	console.log("Reception:", payload);
-	//     if (payload.type === 'vote-update') {
-	//         localVote.votes = payload.votes;
-	//         renderVote();
-	//     }
-	// });
+	sdk.onData((from, payload) => {
+	    if (payload.type === 'nickname-update') {
+	        updatePeerName(payload.id, payload.pseudonym);
+	        renderNotVotedList();
+	    }
+	});
 
 	function initConfigMode() {
 	    document.getElementById('header-app').style.display = 'block';
