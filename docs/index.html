@@ -112,16 +112,15 @@
 	startApp();
 
 	sdk.onProfileUpdate(async (profile) => {
-
 	    const peers = await sdk.getPeers();
 	    const activePeers = peers.filter(p => p.isActiveOnApp);
 
 	    sdk.sendData(activePeers, {
-	        type: 'nickname-update',
+	        type: 'name-update',
 	        id: profile.id,
 	        pseudonym: profile.pseudonym
 	    });
-	    renderNotVotedList();
+
 	});
 
 	sdk.onAppEvent((senderId, data, timestamp) => {
@@ -134,9 +133,13 @@
 	});
 
 	sdk.onData((from, payload) => {
-	    if (payload.type === 'nickname-update') {
-	        updatePeerName(payload.id, payload.pseudonym);
-	        renderNotVotedList();
+	    if (payload.type === 'name-update') {
+	        const items = document.querySelectorAll('#not-voted-list li');
+	        items.forEach(li => {
+	            if (li.dataset.peerId === payload.id) {
+	                li.textContent = payload.pseudonym;
+	            }
+	        });
 	    }
 	});
 
@@ -397,8 +400,9 @@
 	           
 	        } else {
 	            const li = document.createElement('li');
-	            li.textContent = peer.pseudonym;
-	            list.appendChild(li);
+				li.textContent = peer.pseudonym;
+				li.dataset.peerId = peer.id;
+				list.appendChild(li);
 	        }
 
 	    });
