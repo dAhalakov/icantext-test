@@ -133,7 +133,7 @@
 	});
 
 	sdk.onData((from, payload) => {
-		console.log(payload.type);
+		console.log(payload);
 	    if (payload.type === 'name-update') {
 	    	console.log("got it, pseudo changed");
 	        const items = document.querySelectorAll('#not-voted-list li');
