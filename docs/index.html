@@ -114,7 +114,7 @@
 	sdk.onProfileUpdate(async (profile) => {
 	    const peers = await sdk.getPeers();
 	    const activePeers = peers.filter(p => p.isActiveOnApp);
-
+	    console.log("trying to change pseudo");
 	    sdk.sendData(activePeers, {
 	        type: 'name-update',
 	        id: profile.id,
@@ -134,6 +134,7 @@
 
 	sdk.onData((from, payload) => {
 	    if (payload.type === 'name-update') {
+	    	console.log("got it, pseudo changed");
 	        const items = document.querySelectorAll('#not-voted-list li');
 	        items.forEach(li => {
 	            if (li.dataset.peerId === payload.id) {
